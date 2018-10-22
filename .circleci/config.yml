@@ -8,7 +8,7 @@ workflows:
       - yart_binary_stable:
           requires:
             - builder_tooling_stable
-      - yart_docker_image_stable
+      - yart_docker_image_stable:
           requires:
             - builder_tooling_stable
 
