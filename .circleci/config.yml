@@ -18,10 +18,7 @@ jobs:
           command: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
       - run:
           name: Build image
-          command: >
-            pushd .circleci &&
-            docker build -t tooling --build-arg toolchain="stable" . &&
-            popd
+          command: docker build -t tooling --build-arg toolchain="stable" .circleci
       - run:
           name: Push image
           command: >
@@ -45,14 +42,23 @@ jobs:
             echo "===================="
             echo -n "Clippy "; cargo clippy --version --verbose;
             echo "===================="
+
       - run:
           name: Formatting
           command: |
             cargo fmt;
             cargo clippy;
+
       - run:
           name: Build - Release
-          command: cargo build --release
+          command: cargo build --release && mv target/release/yart /tmp
+      - store_artifacts:
+          path: /tmp/yart
+          destination: yart
+
       - run:
           name: Build - Debug
-          command: cargo build
+          command: cargo build && mv target/debug/yart /tmp
+      - store_artifacts:
+          path: /tmp/yart
+          destination: yart-debug
