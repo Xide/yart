@@ -22,7 +22,7 @@ jobs:
           command: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
       - run:
           name: Build image
-          command: docker build -t tooling --build-arg toolchain="stable" .circleci
+          command: make tooling
       - run:
           name: Push image
           command: >
@@ -36,7 +36,7 @@ jobs:
       - checkout
       - run:
           name: Generate create documentation
-          command: rustdoc src/main.rs --crate-name yart && mv doc /tmp/doc
+          command: make doc && mv doc /tmp/doc
       - store_artifacts:
           path: /tmp/doc
           destination: crate_documentation
@@ -50,7 +50,7 @@ jobs:
           command: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
       - run:
           name: Build image
-          command: docker build -t yart .
+          command: make build.docker
       - run:
           name: Push image
           command: >
@@ -77,10 +77,7 @@ jobs:
 
       - run:
           name: Formatting
-          command: |
-            cargo fmt;
-            cargo clippy;
-
+          command: make lint
       - run:
           name: Build - Release
           command: cargo build --release && mv target/release/yart /tmp
