@@ -3,6 +3,7 @@ workflows:
   version: 2
   integration:
     jobs:
+      - crate_documentation
       - builder_tooling_stable
       - yart_binary_stable:
           requires:
@@ -27,6 +28,18 @@ jobs:
           command: >
             docker tag tooling $DOCKER_USER/yart-builder:stable &&
             docker push $DOCKER_USER/yart-builder:stable
+
+  crate_documentation:
+    docker:
+      - image: $DOCKER_USER/yart-builder:stable
+    steps:
+      - checkout
+      - run:
+          name: Generate create documentation
+          command: rustdoc src/main.rs --crate-name yart && mv doc /tmp/doc
+      - store_artifacts:
+          path: /tmp/doc
+          destination: crate_documentation
 
   yart_docker_image_stable:
     machine: true
