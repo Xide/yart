@@ -35,7 +35,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Generate create documentation
+          name: Generate crate documentation
           command: make doc && mv doc /tmp/doc
       - store_artifacts:
           path: /tmp/doc
