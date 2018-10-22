@@ -1,0 +1,58 @@
+version: 2
+workflows:
+  version: 2
+  integration:
+    jobs:
+      - builder_tooling_stable
+      - yart_binary_stable:
+          requires:
+            - builder_tooling_stable
+
+jobs:
+  builder_tooling_stable:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Docker login
+          command: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+      - run:
+          name: Build image
+          command: >
+            pushd .circleci &&
+            docker build -t tooling --build-arg toolchain="stable" . &&
+            popd
+      - run:
+          name: Push image
+          command: >
+            docker tag tooling $DOCKER_USER/yart-builder:stable &&
+            docker push $DOCKER_USER/yart-builder:stable
+
+  yart_binary_stable:
+    docker:
+      - image: $DOCKER_USER/yart-builder:stable
+    steps:
+      - checkout
+      - run:
+          name: Version informations
+          command: |
+            echo "===================="
+            rustc --version --verbose;
+            echo "===================="
+            cargo --version --verbose;
+            echo "===================="
+            rustfmt --version --verbose;
+            echo "===================="
+            echo -n "Clippy "; cargo clippy --version --verbose;
+            echo "===================="
+      - run:
+          name: Formatting
+          command: |
+            cargo fmt;
+            cargo clippy;
+      - run:
+          name: Build - Release
+          command: cargo build --release
+      - run:
+          name: Build - Debug
+          command: cargo build
