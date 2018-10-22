@@ -7,6 +7,9 @@ workflows:
       - yart_binary_stable:
           requires:
             - builder_tooling_stable
+      - yart_docker_image_stable
+          requires:
+            - builder_tooling_stable
 
 jobs:
   builder_tooling_stable:
@@ -24,6 +27,22 @@ jobs:
           command: >
             docker tag tooling $DOCKER_USER/yart-builder:stable &&
             docker push $DOCKER_USER/yart-builder:stable
+
+  yart_docker_image_stable:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Docker login
+          command: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+      - run:
+          name: Build image
+          command: docker build -t yart .
+      - run:
+          name: Push image
+          command: >
+            docker tag yart $DOCKER_USER/yart:stable &&
+            docker push $DOCKER_USER/yart:stable
 
   yart_binary_stable:
     docker:
